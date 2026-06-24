@@ -1,0 +1,18 @@
+{
+  "list":[
+    {
+      "itemID": "001",
+      "itemName": "Potion",
+      "type": 0,
+      "effectNumber": 30,
+      "amount": 0
+    },
+    {
+      "itemID": "002",
+      "itemName": "HiPotion",
+      "type": 0,
+      "effectNumber": 80,
+      "amount": 0
+    }
+  ]
+}
