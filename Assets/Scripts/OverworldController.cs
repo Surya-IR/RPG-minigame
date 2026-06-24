@@ -1,10 +1,14 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class OverworldController : MonoBehaviour
 {
     [SerializeField] Rigidbody rb;
-    [SerializeField] float speed = 3f;
+    [SerializeField] float originalSpeed = 3f;
+    [SerializeField] float speed = 0;
     [SerializeField] Camera cam;
+
+    [SerializeField] FungusTriggerTest tester;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -14,6 +18,8 @@ public class OverworldController : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody>();
         cam.transform.parent = gameObject.transform;
         PositionCamera();
+
+        tester.dialogueFinish.AddListener(EnableControl);
     }
 
     void PlayerMovement()
@@ -28,12 +34,13 @@ public class OverworldController : MonoBehaviour
         cam.transform.position = playerPos + new Vector3(0, 4, -7);
 
         cam.transform.LookAt(playerPos);
-
-        //var cameraDist = transform.position - cam.transform.position;
-        //var cameraRotation = Quaternion.LookRotation(cameraDist);
-
-        //cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, cameraRotation, 1);
     }
+
+    public void EnableControl()
+    {
+        speed = originalSpeed;
+    }
+
     // Update is called once per frame
     void Update()
     {
