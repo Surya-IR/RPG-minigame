@@ -11,13 +11,9 @@ public class CutsceneManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        Debug.Log(brain.ActiveBlend);
     }
 
-    public void ChangeCamera()
-    {
-        currentCamera++;
-    }
 
     // Update is called once per frame
     void Update()

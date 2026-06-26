@@ -132,6 +132,10 @@ public class CommandManager : MonoBehaviour
                 ShowItems();
                 EnableButton(true, "items");
                 break;
+            case "Skip":
+                Debug.Log("Skipping Turn");
+               // TurnBasedManager.Ins.endPlayerTurn();
+                break;
             default:
                 cmd = Command.escape;
                 break;
@@ -183,7 +187,6 @@ public class CommandManager : MonoBehaviour
     public void ButtonsPlacement(Transform parent)
     {
         float commandMenuHeight = parent.GetComponent<RectTransform>().sizeDelta.y;
-        float buttonPlacementDistance = (commandMenuHeight / 4) - 20f;
         int commandButtonCount = parent.transform.childCount;
         float currentButtonPos = 0f;
 
@@ -194,6 +197,8 @@ public class CommandManager : MonoBehaviour
             commandChilds.Add(parent.transform.GetChild(i));
         }
         commandChilds.Reverse();
+
+        float buttonPlacementDistance = (commandMenuHeight / commandChilds.Count) - 20f;
 
         foreach (Transform button in commandChilds)
         {

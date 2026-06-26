@@ -1,9 +1,14 @@
+using Ilumisoft.HealthSystem;
 using UnityEngine;
 
 public class PartyScript : CharacterScript
 {
     public string characterName;
     public Stats.CharacterRole role;
+
+    public float MaxHealth;
+    public float MaxMana;
+
     [SerializeField] float health;
     [SerializeField] float mana;
     [SerializeField] float attackDamage;
@@ -13,6 +18,8 @@ public class PartyScript : CharacterScript
     [SerializeField] float blockChance;
 
     public bool isDead;
+
+    [SerializeField] Health healthBar;
     [SerializeField] Stats characterStats;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
@@ -20,6 +27,9 @@ public class PartyScript : CharacterScript
     {
         if (characterStats != null)
         {
+            MaxHealth = characterStats.health;
+            MaxMana = characterStats.mana;
+
             role = characterStats.role;
             characterName = characterStats.name;
             health = characterStats.health;
@@ -31,7 +41,8 @@ public class PartyScript : CharacterScript
 
     void Start()
     {
-        
+        isDead = false;
+        healthBar.MaxHealth = MaxHealth;
         if (gameObject.GetComponent<PartyScript>() != null)
         {
 
@@ -43,8 +54,10 @@ public class PartyScript : CharacterScript
     public override void GetDamage(float damage)
     {
         HealthData = health - damage;
+      //  healthBar.SetHealth(HealthData);
         if (health <= 0)
         {
+            Debug.Log("Character is Dead");
             isDead = true;
         }
     }
@@ -52,6 +65,10 @@ public class PartyScript : CharacterScript
     public override void GetHeal(float heal)
     {
         HealthData = health + heal;
+        if (HealthData > MaxHealth)
+        {
+            health= MaxHealth;
+        }
     }
 
     // Update is called once per frame

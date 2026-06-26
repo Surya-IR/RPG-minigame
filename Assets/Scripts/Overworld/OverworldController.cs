@@ -7,15 +7,17 @@ public class OverworldController : MonoBehaviour
     [SerializeField] float originalSpeed = 3f;
     [SerializeField] float speed = 0;
     [SerializeField] Camera cam;
+    public bool inDialogue = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         cam = Camera.main;
-
         rb = gameObject.GetComponent<Rigidbody>();
         cam.transform.parent = gameObject.transform;
         PositionCamera();
+
+        EnableControl();
     }
 
     void PlayerMovement()
@@ -35,7 +37,10 @@ public class OverworldController : MonoBehaviour
 
     public void EnableControl()
     {
-        speed = originalSpeed;
+        if (!inDialogue)
+        {
+            speed = originalSpeed;
+        }
     }
 
     // Update is called once per frame
