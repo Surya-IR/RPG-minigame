@@ -1,3 +1,4 @@
+using Fungus;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -33,6 +34,7 @@ public class CommandManager : MonoBehaviour
     #region MENU_PARENTS
     public Transform commandMenuList;
     public Transform itemMenuList;
+    public GameObject healthBar;
     #endregion
 
     #region BUTTON_PREFABS
@@ -40,6 +42,7 @@ public class CommandManager : MonoBehaviour
     [SerializeField] GameObject cancelButtonPrefab;
     #endregion
 
+    [SerializeField] Flowchart WinCondition;
     private void Awake()
     {
         if (Ins == null)
@@ -52,11 +55,12 @@ public class CommandManager : MonoBehaviour
     {
         cam = Camera.main;
         ButtonsPlacement(commandMenuList);
-        ItemButtonsPlacement();
+        ItemButtonsListing();
         itemMenuList.gameObject.SetActive(false);
 
     }
 
+    #region CLICK_INTERACTION
     public void ClickToSelectTarget()
     {
 
@@ -130,60 +134,22 @@ public class CommandManager : MonoBehaviour
             case "Item":
                 cmd = Command.item;
                 ShowItems();
-                EnableButton(true, "items");
+                EnableButton("items");
                 break;
             case "Skip":
                 Debug.Log("Skipping Turn");
-               // TurnBasedManager.Ins.endPlayerTurn();
+                TurnBasedManager.Ins.endPlayerTurn();
                 break;
             default:
                 cmd = Command.escape;
                 break;
         }
     }
+    #endregion
 
-    public void ShowItems()
-    {
-        itemMenuList.gameObject.SetActive(true);
-        ButtonsPlacement(itemMenuList);
-        commandMenuList.gameObject.SetActive(false);
-    }
+    #region BUTTON_FUNCTIONS
 
-    public void ItemButtonsPlacement()
-    {
-        int siblingIndex = 0;
-        var FetchedItemList = ItemManager.Ins.GetItemsList();
-
-        foreach (Items item in FetchedItemList)
-        {
-            var newButton = Instantiate(itemButtonPrefab);
-            newButton.transform.GetChild(0).GetComponent<TMP_Text>().text = item.itemName;
-
-            Vector3 buttonPos = itemMenuList.position;
-            newButton.transform.position = buttonPos;
-            newButton.transform.SetParent(itemMenuList);
-            newButton.transform.SetSiblingIndex(siblingIndex);
-
-            newButton.GetComponent<Button>().onClick.AddListener(()=>ItemManager.Ins.SelectItem(item.itemName));
-            siblingIndex++;
-        }
-
-        Vector3 cancelPos = itemMenuList.position;
-        var cancelButton = Instantiate(cancelButtonPrefab);
-        cancelButton.transform.position = cancelPos;
-        cancelButton.transform.SetParent(itemMenuList);
-        cancelButton.transform.SetAsLastSibling();
-        cancelButton.GetComponent<Button>().onClick.AddListener(() => BackToMain(itemMenuList.gameObject));
-    }
-
-
-    public void BackToMain(GameObject currentMenu)
-    {
-        commandMenuList.gameObject.SetActive(true);
-        ButtonsPlacement(commandMenuList);
-        currentMenu.SetActive(false);
-    }
-
+    //List & Order Buttons based on menu
     public void ButtonsPlacement(Transform parent)
     {
         float commandMenuHeight = parent.GetComponent<RectTransform>().sizeDelta.y;
@@ -209,41 +175,84 @@ public class CommandManager : MonoBehaviour
         }
     }
 
-    public void EnableButton(bool e, string list)
+    //Swap from Command Menu to Item Menu
+    public void ShowItems()
+    {
+        itemMenuList.gameObject.SetActive(true);
+        ButtonsPlacement(itemMenuList);
+        commandMenuList.gameObject.SetActive(false);
+    }
+
+    //Preload Items from Active Inventory
+    public void ItemButtonsListing()
+    {
+        int siblingIndex = 0;
+        var FetchedItemList = ItemManager.Ins.GetItemsList();
+
+        foreach (Items item in FetchedItemList)
+        {
+            var newButton = Instantiate(itemButtonPrefab);
+
+            newButton.transform.GetChild(0).GetComponent<TMP_Text>().text = item.itemName;
+            Vector3 buttonPos = itemMenuList.position;
+            newButton.transform.position = buttonPos;
+            newButton.transform.SetParent(itemMenuList);
+            newButton.transform.SetSiblingIndex(siblingIndex);
+            newButton.GetComponent<Button>().onClick.AddListener(() => ItemManager.Ins.SelectItem(item.itemName));
+            siblingIndex++;
+        }
+
+        Vector3 cancelPos = itemMenuList.position;
+        var cancelButton = Instantiate(cancelButtonPrefab);
+        cancelButton.transform.position = cancelPos;
+        cancelButton.transform.SetParent(itemMenuList);
+        cancelButton.transform.SetAsLastSibling();
+        cancelButton.GetComponent<Button>().onClick.AddListener(() => BackToMain(itemMenuList.gameObject));
+    }
+
+    //Back to Command Menu/Cancel Action
+    public void BackToMain(GameObject currentMenu)
+    {
+        commandMenuList.gameObject.SetActive(true);
+        ButtonsPlacement(commandMenuList);
+        currentMenu.SetActive(false);
+    }
+
+    public void EnableButton(string list)
     {
         switch (list)
         {
             case "items":
-                var itemButtons = itemMenuList.childCount;
-                for (int i = 0; i < itemButtons; i++)
-                {
-                    GameObject button = itemMenuList.GetChild(i).gameObject;
-                    if (button.GetComponent<Button>() != null)
-                    {
-                        button.GetComponent<Button>().enabled = e;
-                    }
-                }
+                itemMenuList.gameObject.SetActive(true);
                 break;
             default:
-                itemButtons = commandMenuList.childCount;
-
-                for (int i = 0; i > itemButtons; i++)
+                if (!TurnBasedManager.Ins.isDefeated && !TurnBasedManager.Ins.isWin)
                 {
-                    GameObject button = commandMenuList.GetChild(i).gameObject;
-                    if (button.GetComponent<Button>() != null)
-                    {
-                        button.GetComponent<Button>().enabled = e;
-                    }
+                    commandMenuList.gameObject.SetActive(true);
                 }
                 break;
         }
-        
     }
+    #endregion
+
+    #region WIN_CONDITION_SCREEN
+    public void GameOverScreen()
+    {
+        WinCondition.ExecuteBlock("GameOver");
+        healthBar.gameObject.SetActive(false);
+    }
+
+    public void WinScreen()
+    {
+        commandMenuList.gameObject.SetActive(false);
+        WinCondition.ExecuteBlock("PlayerWin");
+    }
+    #endregion
 
     public IEnumerator CommandStartPlayerTurn()
     {
-        yield return new WaitForSeconds(1);
-        commandMenuList.gameObject.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
+        EnableButton("command");
 
         ButtonsPlacement(commandMenuList);
 
@@ -263,6 +272,11 @@ public class CommandManager : MonoBehaviour
         commandMenuList.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(1);
+    }
+
+    public void BackToMainMenu()
+    {
+
     }
 
     void Update()

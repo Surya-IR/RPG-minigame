@@ -3,9 +3,11 @@ using UnityEngine;
 
 public class QuestGiver : MonoBehaviour
 {
-    public bool isInteractable;
-    public bool inDialogue = false;
+    private bool isInteractable;
+    private bool inDialogue = false;
     [SerializeField] Flowchart flowchart;
+
+    [SerializeField] EnterDungeon dungeonDoor;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -19,9 +21,15 @@ public class QuestGiver : MonoBehaviour
 
     public void QuestDialogue()
     {
-        inDialogue=true;
-        flowchart.ExecuteBlock("NPCQuest");
-
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (isInteractable)
+            {
+                inDialogue = true;
+                flowchart.ExecuteBlock("NPCQuest");
+                dungeonDoor.ActivateQuest();
+            }
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -32,6 +40,6 @@ public class QuestGiver : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       //InteractWithPlayer();
+        QuestDialogue();
     }
 }

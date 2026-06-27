@@ -79,7 +79,7 @@ public class ItemManager : MonoBehaviour
             {
                 selectedItem = item;
                 Debug.Log("Item Type: " + item.type);
-                CommandManager.Ins.EnableButton(false, "items");
+                CommandManager.Ins.EnableButton("items");
             }
         }
     }

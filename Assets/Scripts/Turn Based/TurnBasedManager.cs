@@ -20,6 +20,10 @@ public class TurnBasedManager : MonoBehaviour
 
     public KeyValuePair<Turn, int> currentTurn;
 
+    public bool isDefeated;
+
+    public bool isWin;
+
     private void Awake()
     {
         if (Ins == null)
@@ -31,6 +35,8 @@ public class TurnBasedManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        isDefeated = false;
+        isWin = false;
         StartPlayerTurn();
     }
 
@@ -39,6 +45,7 @@ public class TurnBasedManager : MonoBehaviour
     {
         playerParty.Add(party);
         playerParty.OrderBy(x=>x.speedData).ToList();
+        Debug.Log("Party Numbers: " + playerParty.Count);
     }
 
 
@@ -76,25 +83,38 @@ public class TurnBasedManager : MonoBehaviour
         {
             endPlayerTurn();
         }
+        else
+        {
+            currentTurn = new KeyValuePair<Turn, int>(Turn.player, nextTurn);
+        }
     }
 
-    private void endPlayerTurn()
+    public void endPlayerTurn()
     {
+        List<PartyScript> aliveParty = playerParty.Where(x => !x.isDead).ToList();
         StartCoroutine(CommandManager.Ins.CommandEndPlayerTurn());
-        StartEnemyTurn();
+
+        if (aliveParty.Count > 0)
+        {
+            StartEnemyTurn();
+        }
     }
     #endregion
 
     private void CheckWinCondition()
     {
         List<EnemyScript> activeEnemy = enemyParty.Where(enemy => enemy.isDead == false).ToList();
-        if (activeEnemy.Count == 0)
+        List<PartyScript> activeParty = playerParty.Where(party => party.isDead == false).ToList();
+
+        if (activeParty.Count == 0)
         {
-            Debug.Log("Player Wins");
+            isDefeated = true;
+            CommandManager.Ins.GameOverScreen();
         }
-        else
+        else if (activeEnemy.Count == 0)
         {
-            NextPlayerTurn();
+            isWin = true;
+            CommandManager.Ins.WinScreen();
         }
     }
 
@@ -111,25 +131,24 @@ public class TurnBasedManager : MonoBehaviour
                     target.GetDamage(playerParty[currentTurn.Value].attackData);
                 }
         }
-
         CheckWinCondition();
+        NextPlayerTurn();
     }
     #endregion
 
     public void StartEnemyTurn()
     {
         currentTurn = new KeyValuePair<Turn, int>(Turn.enemy, 0);
-        StartCoroutine(NextEnemyTurn());
+        StartCoroutine(CycleEnemyTurn());
     }
 
-    private IEnumerator NextEnemyTurn()
+    private IEnumerator CycleEnemyTurn()
     {
-        yield return new WaitForSeconds(1);
-
             foreach (EnemyScript enemy in enemyParty)
             {
                 ActiveEnemyAttackParty(enemy);
-            }
+                yield return new WaitForSeconds(0.2f);
+        }
         EndEnemyTurn();
     }
 
@@ -143,6 +162,8 @@ public class TurnBasedManager : MonoBehaviour
         int targetIndex = Random.Range(0, playerParty.Count - 1);
         PartyScript selectTarget = playerParty[targetIndex];
         selectTarget.GetDamage(enemy.attackData);
+
+        CheckWinCondition();
     }
 
     void Update()

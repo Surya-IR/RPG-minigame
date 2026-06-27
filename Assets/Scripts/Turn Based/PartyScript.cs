@@ -1,4 +1,7 @@
+using DG.Tweening;
+using Fungus;
 using Ilumisoft.HealthSystem;
+using System.Collections;
 using UnityEngine;
 
 public class PartyScript : CharacterScript
@@ -21,9 +24,54 @@ public class PartyScript : CharacterScript
 
     [SerializeField] Health healthBar;
     [SerializeField] Stats characterStats;
+
+    [SerializeField] float fadeSpeed;
+
+    [SerializeField] Material playerMat;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     private void Awake()
+    {
+        AssignStats();
+    }
+
+    void Start()
+    {
+        isDead = false;
+        healthBar.MaxHealth = MaxHealth;
+        if (gameObject.GetComponent<PartyScript>() != null)
+        {
+            TurnBasedManager.Ins.indexParty(gameObject.GetComponent<PartyScript>());
+        }
+
+        playerMat = gameObject.GetComponent<MeshRenderer>().material;
+    }
+
+    public override void GetDamage(float damage)
+    {
+        if (health <= 0)
+        {
+            Debug.Log("Character is Dead");
+            isDead = true;
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            HealthData = health - damage;
+            healthBar.SetHealth(HealthData);
+        }
+    }
+
+    public override void GetHeal(float heal)
+    {
+        HealthData = health + heal;
+        if (HealthData > MaxHealth)
+        {
+            health= MaxHealth;
+        }
+    }
+
+    public void AssignStats()
     {
         if (characterStats != null)
         {
@@ -36,38 +84,6 @@ public class PartyScript : CharacterScript
             mana = characterStats.mana;
             attackDamage = characterStats.damage;
             speed = characterStats.speed;
-        }
-    }
-
-    void Start()
-    {
-        isDead = false;
-        healthBar.MaxHealth = MaxHealth;
-        if (gameObject.GetComponent<PartyScript>() != null)
-        {
-
-            TurnBasedManager.Ins.indexParty(gameObject.GetComponent<PartyScript>());
-
-        }
-    }
-
-    public override void GetDamage(float damage)
-    {
-        HealthData = health - damage;
-      //  healthBar.SetHealth(HealthData);
-        if (health <= 0)
-        {
-            Debug.Log("Character is Dead");
-            isDead = true;
-        }
-    }
-
-    public override void GetHeal(float heal)
-    {
-        HealthData = health + heal;
-        if (HealthData > MaxHealth)
-        {
-            health= MaxHealth;
         }
     }
 
