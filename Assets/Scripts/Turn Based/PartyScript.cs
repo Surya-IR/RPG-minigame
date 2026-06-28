@@ -27,7 +27,7 @@ public class PartyScript : CharacterScript
 
     [SerializeField] float fadeSpeed;
 
-    [SerializeField] Material playerMat;
+    [SerializeField] Animator anim;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     private void Awake()
@@ -39,21 +39,20 @@ public class PartyScript : CharacterScript
     {
         isDead = false;
         healthBar.MaxHealth = MaxHealth;
+        healthBar.SetHealth(HealthData);
+
         if (gameObject.GetComponent<PartyScript>() != null)
         {
             TurnBasedManager.Ins.indexParty(gameObject.GetComponent<PartyScript>());
         }
-
-        playerMat = gameObject.GetComponent<MeshRenderer>().material;
     }
 
     public override void GetDamage(float damage)
     {
         if (health <= 0)
         {
-            Debug.Log("Character is Dead");
             isDead = true;
-            gameObject.SetActive(false);
+            anim.Play("NordstromDeath");
         }
         else
         {
@@ -71,8 +70,21 @@ public class PartyScript : CharacterScript
         }
     }
 
+    public void AnimateAttack()
+    {
+        anim.SetBool("isIdle", false);
+        anim.Play("StableSlash");
+    }
+
+    public void AnimateIdle()
+    {
+        anim.SetBool("isIdle", false);
+        anim.Play("TurnBasedIdle");
+    }
+
     public void AssignStats()
     {
+        Debug.Log("Assigning Stats");
         if (characterStats != null)
         {
             MaxHealth = characterStats.health;
@@ -91,6 +103,12 @@ public class PartyScript : CharacterScript
     void Update()
     {
         
+    }
+
+    public Animator GetAnim
+    {
+        get { return anim; }
+        set { anim = value; }
     }
 
     public float HealthData

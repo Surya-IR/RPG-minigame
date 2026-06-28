@@ -1,8 +1,10 @@
+using Fungus;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TurnBasedManager : MonoBehaviour
 {
@@ -120,7 +122,7 @@ public class TurnBasedManager : MonoBehaviour
 
 
     #region PLAYER_ATTACK_PHASE
-    public void ActivePartyAttackEnemy(string targetName)
+    public IEnumerator ActivePartyAttackEnemy(string targetName)
     {
         if (currentTurn.Key == Turn.player && currentTurn.Value == 0)
         {
@@ -131,6 +133,11 @@ public class TurnBasedManager : MonoBehaviour
                     target.GetDamage(playerParty[currentTurn.Value].attackData);
                 }
         }
+        playerParty[currentTurn.Value].AnimateAttack();
+        yield return new WaitUntil(() => playerParty[currentTurn.Value].GetAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
+
+        playerParty[currentTurn.Value].AnimateIdle();
+
         CheckWinCondition();
         NextPlayerTurn();
     }
@@ -146,7 +153,7 @@ public class TurnBasedManager : MonoBehaviour
     {
             foreach (EnemyScript enemy in enemyParty)
             {
-                ActiveEnemyAttackParty(enemy);
+                StartCoroutine(ActiveEnemyAttackParty(enemy));
                 yield return new WaitForSeconds(0.2f);
         }
         EndEnemyTurn();
@@ -157,13 +164,28 @@ public class TurnBasedManager : MonoBehaviour
         StartPlayerTurn();
     }
 
-    private void ActiveEnemyAttackParty(EnemyScript enemy)
+    private IEnumerator ActiveEnemyAttackParty(EnemyScript enemy)
     {
         int targetIndex = Random.Range(0, playerParty.Count - 1);
+        enemy.AnimateAttack();
+
         PartyScript selectTarget = playerParty[targetIndex];
         selectTarget.GetDamage(enemy.attackData);
 
+        yield return new WaitUntil(()=> enemy.GetAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
+
+        Debug.Log("Should be Idle Now");
+        enemy.AnimateIdle();
+        Debug.Log("Idle animating");
+
+
+
         CheckWinCondition();
+    }
+
+    public void BackToDungeon()
+    {
+        SceneManager.LoadScene("DungeonScene");
     }
 
     void Update()

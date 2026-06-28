@@ -82,7 +82,7 @@ public class CommandManager : MonoBehaviour
                     case Command.attack:
                         if (target.GetComponent<EnemyScript>() != null)
                             {
-                                TurnBasedManager.Ins.ActivePartyAttackEnemy(targetEnemy.characterName);
+                                StartCoroutine(TurnBasedManager.Ins.ActivePartyAttackEnemy(targetEnemy.characterName));
                             }
                         break;
                     case Command.skill:

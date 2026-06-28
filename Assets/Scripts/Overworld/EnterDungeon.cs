@@ -25,7 +25,7 @@ public class EnterDungeon : MonoBehaviour
         {
             SceneManager.LoadScene("DungeonScene");
         }
-        else
+        else if(isInteractable)
         {
             Dialogue.ExecuteBlock("QuestInactive");
         }

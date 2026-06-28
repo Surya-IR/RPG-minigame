@@ -1,12 +1,15 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class OverworldController : MonoBehaviour
 {
     [SerializeField] Rigidbody rb;
-    [SerializeField] float originalSpeed = 3f;
+    [SerializeField] float originalSpeed = 5f;
     [SerializeField] float speed = 0;
     [SerializeField] Camera cam;
+
+    private Animator anim;
     public bool inDialogue = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -14,25 +17,52 @@ public class OverworldController : MonoBehaviour
     {
         cam = Camera.main;
         rb = gameObject.GetComponent<Rigidbody>();
-        cam.transform.parent = gameObject.transform;
         PositionCamera();
 
-        EnableControl();
+        anim = GetComponent<Animator>();
+        cam.transform.LookAt(transform.position);
+
+        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(cam);
+
+        SceneManager.sceneLoaded += RepositionCameraOnSceneLoad;
     }
 
     void PlayerMovement()
     {
         Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        Vector3 lastDir = new Vector3();
+        if (moveDir != Vector3.zero)
+        {
+            lastDir = moveDir;
+        }
         transform.position += moveDir * speed * Time.deltaTime;
 
+        if (moveDir != Vector3.zero)
+        {
+            anim.SetBool("isWalking", true);
+        }
+        else
+        {
+            anim.SetBool("isWalking", false);
+        }
+
+        Debug.Log("lastDir value: " + lastDir);
+        transform.rotation = Quaternion.LookRotation(lastDir);
     }
 
     void PositionCamera()
     {
         Vector3 playerPos = gameObject.transform.position;
-        cam.transform.position = playerPos + new Vector3(0, 4, -7);
+        cam.transform.position = playerPos + new Vector3(0, 5, -7f);
+    }
 
-        cam.transform.LookAt(playerPos);
+    void RepositionCameraOnSceneLoad(Scene scene, LoadSceneMode mode)
+    {
+        if (cam == null)
+        {
+            cam = Camera.main;
+        }
     }
 
     public void EnableControl()
@@ -52,5 +82,6 @@ public class OverworldController : MonoBehaviour
     void Update()
     {
         PlayerMovement();
+        PositionCamera();
     }
 }
