@@ -63,9 +63,9 @@ public class CommandManager : MonoBehaviour
     #region CLICK_INTERACTION
     public void ClickToSelectTarget()
     {
-
         if (Input.GetMouseButtonDown((int)MouseButton.Left))
         {
+            Debug.Log("Cam? " + cam);
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             
@@ -82,6 +82,7 @@ public class CommandManager : MonoBehaviour
                     case Command.attack:
                         if (target.GetComponent<EnemyScript>() != null)
                             {
+                            Debug.Log("Click Enemy: " + target.gameObject.name);
                                 StartCoroutine(TurnBasedManager.Ins.ActivePartyAttackEnemy(targetEnemy.characterName));
                             }
                         break;
@@ -127,6 +128,7 @@ public class CommandManager : MonoBehaviour
         {
             case "Attack":
                 cmd = Command.attack;
+                Debug.Log("Attacking Enemy");
                 break;
             case "Skill":
                 cmd = Command.skill;

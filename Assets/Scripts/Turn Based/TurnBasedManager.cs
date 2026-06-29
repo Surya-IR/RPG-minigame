@@ -47,7 +47,7 @@ public class TurnBasedManager : MonoBehaviour
     {
         playerParty.Add(party);
         playerParty.OrderBy(x=>x.speedData).ToList();
-        Debug.Log("Party Numbers: " + playerParty.Count);
+        Debug.Log("Party Numbers: " + playerParty.Count + ", Party Name: " + playerParty[0].gameObject.name);
     }
 
 
@@ -60,6 +60,7 @@ public class TurnBasedManager : MonoBehaviour
         enemyParty.Add(enemy);
         enemyParty.OrderBy(x=>x.speedData).ToList();
 
+        Debug.Log("enemyParty Number: " + enemyParty.Count);
     }
 
     public void RemoveEnemy(string characterName)
@@ -177,7 +178,6 @@ public class TurnBasedManager : MonoBehaviour
         Debug.Log("Should be Idle Now");
         enemy.AnimateIdle();
         Debug.Log("Idle animating");
-
 
 
         CheckWinCondition();

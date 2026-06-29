@@ -9,7 +9,7 @@ public class OverworldController : MonoBehaviour
     [SerializeField] float speed = 0;
     [SerializeField] Camera cam;
 
-    private Animator anim;
+    [SerializeField] Animator anim;
     public bool inDialogue = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -17,44 +17,26 @@ public class OverworldController : MonoBehaviour
     {
         cam = Camera.main;
         rb = gameObject.GetComponent<Rigidbody>();
-        PositionCamera();
 
-        anim = GetComponent<Animator>();
+        //anim = GetComponent<Animator>();
         cam.transform.LookAt(transform.position);
 
-        DontDestroyOnLoad(this);
-        DontDestroyOnLoad(cam);
 
         SceneManager.sceneLoaded += RepositionCameraOnSceneLoad;
     }
 
-    void PlayerMovement()
+    void PlayerMovement(Vector3 moveDir)
     {
-        Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+
         Vector3 lastDir = new Vector3();
+
         if (moveDir != Vector3.zero)
         {
             lastDir = moveDir;
         }
         transform.position += moveDir * speed * Time.deltaTime;
-
-        if (moveDir != Vector3.zero)
-        {
-            anim.SetBool("isWalking", true);
-        }
-        else
-        {
-            anim.SetBool("isWalking", false);
-        }
-
-        Debug.Log("lastDir value: " + lastDir);
+        anim.SetBool("isWalking", true);
         transform.rotation = Quaternion.LookRotation(lastDir);
-    }
-
-    void PositionCamera()
-    {
-        Vector3 playerPos = gameObject.transform.position;
-        cam.transform.position = playerPos + new Vector3(0, 5, -7f);
     }
 
     void RepositionCameraOnSceneLoad(Scene scene, LoadSceneMode mode)
@@ -81,7 +63,14 @@ public class OverworldController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        PlayerMovement();
-        PositionCamera();
+        Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        if (moveDir != Vector3.zero)
+        {
+            PlayerMovement(moveDir);
+        }
+        else
+        {
+            anim.SetBool("isWalking", false);
+        }
     }
 }

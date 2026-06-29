@@ -1,3 +1,6 @@
+using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,8 +12,15 @@ public class OverworldManager : MonoBehaviour
     private Quaternion playerLastRot = Quaternion.identity;
 
     [SerializeField] OverworldController player;
+    [SerializeField] Camera cam;
 
+    private List<OverworldEnemy> overworldEnemyList;
+    private List<TreasureChest> overworldChestList;
     private bool checkWorldPos;
+
+    private string currentActiveBattle;
+
+    private bool inBattle;
 
     private void Awake()
     {
@@ -20,32 +30,94 @@ public class OverworldManager : MonoBehaviour
         }
 
         DontDestroyOnLoad(this);
+        DontDestroyOnLoad(player);
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         checkWorldPos = true;
         SceneManager.sceneLoaded += EnterDungeonPositionPlayer;
+
+        SceneManager.sceneLoaded += EnterBattle;
+        SceneManager.sceneLoaded += ExitBattle;
     }
 
-    public void EnterNextArea()
+    void PositionCamera()
     {
-        var coordinates = GameObject.Find("medievalDoor");
-        if (coordinates != null)
+        if (cam == null)
         {
-
+            cam = Camera.main;
+        }
+        else if(!inBattle)
+        {
+            Vector3 playerPos = player.gameObject.transform.position;
+            cam.transform.position = playerPos + new Vector3(0, 5, -7f);
+            cam.transform.LookAt(playerPos);
         }
     }
+
+    //public void EnterNextArea(Scene scene, LoadSceneMode mode)
+    //{
+    //    List<GameObject> objs = scene.GetRootGameObjects().ToList();
+    //    foreach (GameObject ob in objs)
+    //    {
+    //        if (ob.GetComponent<OverworldEnemy>() != null)
+    //        {
+    //            overworldEnemyList.Add(ob.GetComponent<OverworldEnemy>());
+    //        }
+    //        else if (ob.GetComponent<TreasureChest>() != null)
+    //        {
+    //            overworldChestList.Add(ob.GetComponent<TreasureChest>());
+    //        }
+    //    }
+
+    //}
 
     public void QuitGame()
     {
         SceneManager.LoadScene("MainMenuScene");
     }
 
-    public void EnterBattle()
+    public void EnterBattle(Scene scene, LoadSceneMode mode)
     {
-        checkWorldPos= false;
-        player.gameObject.SetActive(false);
+        if (scene.name == "TurnBasedScene")
+        {
+            checkWorldPos = false;
+            player.gameObject.SetActive(false);
+            inBattle = true;
+        }
+    }
+
+    public void ExitBattle(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "TurnBasedScene" && inBattle)
+        {
+            GameObject[] root = scene.GetRootGameObjects();
+            foreach (GameObject r in root)
+            {
+                if (r.GetComponent<OverworldEnemy>() != null)
+                {
+                    if (r.GetComponent<OverworldEnemy>().EncounterID == currentActiveBattle)
+                    {
+                        r.gameObject.SetActive(false);
+                    }
+                }
+            }
+            checkWorldPos = true;
+            player.gameObject.SetActive(true);
+            inBattle = false;
+            PostBattlePositionPlayer();
+        }
+    }
+
+    public void EnableControl()
+    {
+        player.EnableControl();
+    }
+
+    public void SetBattleID(string id)
+    {
+        currentActiveBattle = id;
     }
 
     public void PostBattlePositionPlayer()
@@ -66,9 +138,9 @@ public class OverworldManager : MonoBehaviour
             if (obj.GetComponent<Door>() != null)
             {
                 entryDoor = obj.GetComponent<Door>();
+                player.transform.position = entryDoor.SpawnLocation.position;
             }
         }
-        player.transform.position = entryDoor.SpawnLocation.position;
     }
     // Update is called once per frame
     void Update()
@@ -78,5 +150,7 @@ public class OverworldManager : MonoBehaviour
             playerLastPos = player.gameObject.transform.position;
             playerLastRot = player.gameObject.transform.rotation;
         }
+
+        PositionCamera();
     }
 }
