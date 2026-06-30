@@ -12,7 +12,9 @@ public class OverworldController : MonoBehaviour
     [SerializeField] Animator anim;
     public bool inDialogue = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public bool inCutscene;
+
+    float angle = 0;
     void Start()
     {
         cam = Camera.main;
@@ -25,7 +27,7 @@ public class OverworldController : MonoBehaviour
         SceneManager.sceneLoaded += RepositionCameraOnSceneLoad;
     }
 
-    void PlayerMovement(Vector3 moveDir)
+    public void PlayerMovement(Vector3 moveDir)
     {
 
         Vector3 lastDir = new Vector3();
@@ -60,10 +62,22 @@ public class OverworldController : MonoBehaviour
         speed = 0;
     }
 
+    public void PlayCutsceneWalk()
+    {
+        anim.SetBool("isCutsceneWalk", true);
+        anim.Play("Cutscene Walk");
+    }
+
+    public void BackToIdle()
+    {
+        Debug.Log("Stop Cutscene Walking: ");
+        anim.SetBool("isCutsceneWalk", false);
+    }
+
     // Update is called once per frame
     void Update()
     {
-        Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+            Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
         if (moveDir != Vector3.zero)
         {
             PlayerMovement(moveDir);

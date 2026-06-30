@@ -14,8 +14,6 @@ public class OverworldManager : MonoBehaviour
     [SerializeField] OverworldController player;
     [SerializeField] Camera cam;
 
-    private List<OverworldEnemy> overworldEnemyList;
-    private List<TreasureChest> overworldChestList;
     private bool checkWorldPos;
 
     private string currentActiveBattle;
@@ -27,6 +25,10 @@ public class OverworldManager : MonoBehaviour
         if (Ins == null)
         {
             Ins = this;
+        }
+        else if (Ins != this)
+        {
+            Destroy(this.gameObject);
         }
 
         DontDestroyOnLoad(this);
@@ -55,23 +57,6 @@ public class OverworldManager : MonoBehaviour
             cam.transform.LookAt(playerPos);
         }
     }
-
-    //public void EnterNextArea(Scene scene, LoadSceneMode mode)
-    //{
-    //    List<GameObject> objs = scene.GetRootGameObjects().ToList();
-    //    foreach (GameObject ob in objs)
-    //    {
-    //        if (ob.GetComponent<OverworldEnemy>() != null)
-    //        {
-    //            overworldEnemyList.Add(ob.GetComponent<OverworldEnemy>());
-    //        }
-    //        else if (ob.GetComponent<TreasureChest>() != null)
-    //        {
-    //            overworldChestList.Add(ob.GetComponent<TreasureChest>());
-    //        }
-    //    }
-
-    //}
 
     public void QuitGame()
     {
@@ -104,10 +89,17 @@ public class OverworldManager : MonoBehaviour
                 }
             }
             checkWorldPos = true;
-            player.gameObject.SetActive(true);
             inBattle = false;
+
+            player.gameObject.SetActive(true);
             PostBattlePositionPlayer();
         }
+    }
+
+    public void ExitCutscene()
+    {
+        player.EnableControl();
+        PositionCamera();
     }
 
     public void EnableControl()
@@ -141,6 +133,11 @@ public class OverworldManager : MonoBehaviour
                 player.transform.position = entryDoor.SpawnLocation.position;
             }
         }
+    }
+
+    public OverworldController Player
+    {
+        get { return player; }
     }
     // Update is called once per frame
     void Update()

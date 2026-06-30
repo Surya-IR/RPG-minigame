@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -33,6 +34,8 @@ public class TurnBasedManager : MonoBehaviour
             Ins = this;
         }
     }
+
+    [SerializeField] TMP_Text turnIndicator;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -47,7 +50,6 @@ public class TurnBasedManager : MonoBehaviour
     {
         playerParty.Add(party);
         playerParty.OrderBy(x=>x.speedData).ToList();
-        Debug.Log("Party Numbers: " + playerParty.Count + ", Party Name: " + playerParty[0].gameObject.name);
     }
 
 
@@ -59,8 +61,6 @@ public class TurnBasedManager : MonoBehaviour
 
         enemyParty.Add(enemy);
         enemyParty.OrderBy(x=>x.speedData).ToList();
-
-        Debug.Log("enemyParty Number: " + enemyParty.Count);
     }
 
     public void RemoveEnemy(string characterName)
@@ -73,6 +73,7 @@ public class TurnBasedManager : MonoBehaviour
     public void StartPlayerTurn()
     {
         currentTurn = new KeyValuePair<Turn, int>(Turn.player, 0);
+        turnIndicator.text = playerParty[currentTurn.Value].characterName + "'s Turn";
         StartCoroutine(CommandManager.Ins.CommandStartPlayerTurn());
     }
 
@@ -89,6 +90,7 @@ public class TurnBasedManager : MonoBehaviour
         else
         {
             currentTurn = new KeyValuePair<Turn, int>(Turn.player, nextTurn);
+            turnIndicator.text = playerParty[currentTurn.Value].characterName + "'s Turn";
         }
     }
 
@@ -104,7 +106,7 @@ public class TurnBasedManager : MonoBehaviour
     }
     #endregion
 
-    private void CheckWinCondition()
+    private bool CheckWinCondition()
     {
         List<EnemyScript> activeEnemy = enemyParty.Where(enemy => enemy.isDead == false).ToList();
         List<PartyScript> activeParty = playerParty.Where(party => party.isDead == false).ToList();
@@ -119,24 +121,25 @@ public class TurnBasedManager : MonoBehaviour
             isWin = true;
             CommandManager.Ins.WinScreen();
         }
+
+        return true;
     }
 
 
     #region PLAYER_ATTACK_PHASE
     public IEnumerator ActivePartyAttackEnemy(string targetName)
     {
-        if (currentTurn.Key == Turn.player && currentTurn.Value == 0)
+        if (currentTurn.Key == Turn.player)
         {
             EnemyScript target = enemyParty.Find(x => x.characterName == targetName);
             
                 if (target.characterName == targetName && target.isDead == false)
                 {
                     target.GetDamage(playerParty[currentTurn.Value].attackData);
-                }
+                    playerParty[currentTurn.Value].AnimateAttack();
+            }
         }
-        playerParty[currentTurn.Value].AnimateAttack();
-        yield return new WaitUntil(() => playerParty[currentTurn.Value].GetAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
-
+        yield return new WaitUntil(() => playerParty[currentTurn.Value].GetAnim.GetCurrentAnimatorStateInfo(0).IsName("PlayerAttack") && playerParty[currentTurn.Value].GetAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.7f);
         playerParty[currentTurn.Value].AnimateIdle();
 
         CheckWinCondition();
@@ -146,16 +149,17 @@ public class TurnBasedManager : MonoBehaviour
 
     public void StartEnemyTurn()
     {
+        turnIndicator.text = "Enemy's Turn";
         currentTurn = new KeyValuePair<Turn, int>(Turn.enemy, 0);
         StartCoroutine(CycleEnemyTurn());
     }
 
     private IEnumerator CycleEnemyTurn()
     {
-            foreach (EnemyScript enemy in enemyParty)
-            {
-                StartCoroutine(ActiveEnemyAttackParty(enemy));
-                yield return new WaitForSeconds(0.2f);
+        foreach (EnemyScript enemy in enemyParty)
+        {
+            StartCoroutine(ActiveEnemyAttackParty(enemy));
+            yield return new WaitForSeconds(2);
         }
         EndEnemyTurn();
     }
@@ -167,18 +171,15 @@ public class TurnBasedManager : MonoBehaviour
 
     private IEnumerator ActiveEnemyAttackParty(EnemyScript enemy)
     {
-        int targetIndex = Random.Range(0, playerParty.Count - 1);
+        int targetIndex = Random.Range(0, playerParty.Count);
+
+        Debug.Log("Enemy Targeting: " + playerParty[targetIndex].gameObject.name);
         enemy.AnimateAttack();
 
         PartyScript selectTarget = playerParty[targetIndex];
         selectTarget.GetDamage(enemy.attackData);
 
-        yield return new WaitUntil(()=> enemy.GetAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
-
-        Debug.Log("Should be Idle Now");
-        enemy.AnimateIdle();
-        Debug.Log("Idle animating");
-
+        yield return new WaitUntil(() => enemy.GetAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
 
         CheckWinCondition();
     }

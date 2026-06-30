@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbf63ddd15883a34ea505743bb645226, type: 3}
   m_Name: Nordstrom
   m_EditorClassIdentifier: Assembly-CSharp::Stats
-  characterName: Bob
+  characterName: Nordstrom
   role: 0
   health: 100
   mana: 100
+  speed: 20
   damage: 30
   block: 0

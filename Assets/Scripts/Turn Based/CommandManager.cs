@@ -28,6 +28,7 @@ public class CommandManager : MonoBehaviour
     [SerializeField] Button attackButton;
     [SerializeField] Button skillButton;
     [SerializeField] Button itemButton;
+    [SerializeField] Button skipButton;
     [SerializeField] Button escapeButton;
     #endregion
 
@@ -43,11 +44,17 @@ public class CommandManager : MonoBehaviour
     #endregion
 
     [SerializeField] Flowchart WinCondition;
+
+    [SerializeField] TMP_Text commandGuide;
     private void Awake()
     {
         if (Ins == null)
         {
             Ins = this;
+        }
+        else if (Ins != this)
+        {
+            Destroy(this.gameObject);
         }
     }
 
@@ -80,11 +87,13 @@ public class CommandManager : MonoBehaviour
                 switch (cmd)
                 {
                     case Command.attack:
-                        if (target.GetComponent<EnemyScript>() != null)
+                        if (target.GetComponent<EnemyScript>() != null && !target.GetComponent<EnemyScript>().isDead)
                             {
-                            Debug.Log("Click Enemy: " + target.gameObject.name);
-                                StartCoroutine(TurnBasedManager.Ins.ActivePartyAttackEnemy(targetEnemy.characterName));
+                            commandGuide.text = "";
+                            commandGuide.gameObject.SetActive(false);
+                            StartCoroutine(TurnBasedManager.Ins.ActivePartyAttackEnemy(targetEnemy.characterName));
                             }
+                        cmd = Command.none;
                         break;
                     case Command.skill:
                         //TBA
@@ -95,10 +104,14 @@ public class CommandManager : MonoBehaviour
                             case Items.ItemType.heal:
                                 if (targetParty != null)
                                 {
+                                    Debug.Log("Healing: " + targetParty.characterName + " " + ItemManager.Ins.selectedItem.effectNumber + " points");
                                     targetParty.GetHeal(ItemManager.Ins.selectedItem.effectNumber);
+                                    commandGuide.text = "";
                                     itemMenuList.gameObject.SetActive(false);
-
-                                    TurnBasedManager.Ins.StartEnemyTurn();
+                                    commandMenuList.gameObject.SetActive(true);
+                                    commandGuide.gameObject.SetActive(true);
+                                    cmd = Command.none;
+                                    TurnBasedManager.Ins.NextPlayerTurn();
                                 }
                                 break;
                             case Items.ItemType.damage:
@@ -128,7 +141,8 @@ public class CommandManager : MonoBehaviour
         {
             case "Attack":
                 cmd = Command.attack;
-                Debug.Log("Attacking Enemy");
+                commandGuide.gameObject.SetActive(true);
+                commandGuide.text = "Click the Target";
                 break;
             case "Skill":
                 cmd = Command.skill;
@@ -137,10 +151,12 @@ public class CommandManager : MonoBehaviour
                 cmd = Command.item;
                 ShowItems();
                 EnableButton("items");
+                commandGuide.gameObject.SetActive(true);
+                commandGuide.text = "Click the Party";
                 break;
             case "Skip":
                 Debug.Log("Skipping Turn");
-                TurnBasedManager.Ins.endPlayerTurn();
+                TurnBasedManager.Ins.NextPlayerTurn();
                 break;
             default:
                 cmd = Command.escape;
@@ -259,21 +275,29 @@ public class CommandManager : MonoBehaviour
         ButtonsPlacement(commandMenuList);
 
         attackButton.enabled = true;
-        skillButton.enabled = true;
+     //   skillButton.enabled = true;
         itemButton.enabled = true;
-        escapeButton.enabled = true;
+        skipButton.enabled = true;
+        //escapeButton.enabled = true;
     }
 
     public IEnumerator CommandEndPlayerTurn()
     {
         attackButton.enabled = false;
-        skillButton.enabled = false;
+      //  skillButton.enabled = false;
         itemButton.enabled = false;
-        escapeButton.enabled = false;
+        skipButton.enabled = false;
+     //   escapeButton.enabled = false;
         
         commandMenuList.gameObject.SetActive(false);
+        Debug.Log("Ending Player Turn");
 
         yield return new WaitForSeconds(1);
+    }
+
+    public Command Cmd
+    {
+        get { return cmd; }
     }
 
     public void BackToMainMenu()

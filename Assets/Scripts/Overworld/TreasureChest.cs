@@ -1,5 +1,7 @@
 using Fungus;
+using MoonSharp.VsCodeDebugger.SDK;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TreasureChest : MonoBehaviour
 {
@@ -9,6 +11,13 @@ public class TreasureChest : MonoBehaviour
     [SerializeField] string chestID;
 
     [SerializeField] Flowchart chart;
+
+    [SerializeField] GameObject highlightText;
+
+    [SerializeField] AudioSource bgm;
+    [SerializeField] AudioSource bgmWin;
+
+    private OverworldController player;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -19,21 +28,31 @@ public class TreasureChest : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         isInteractable = true;
+        highlightText.SetActive(true);
+        if (other.gameObject.GetComponent<OverworldController>() != null)
+        {
+            player = other.gameObject.GetComponent<OverworldController>();
+        }
     }
 
     private void OnTriggerExit(Collider other)
     {
+        highlightText.SetActive(false);
         isInteractable = false;
     }
 
     public void InteractWithChest()
     {
-            chart.ExecuteBlock("OpenChest");
+        bgm.Stop();
+        bgmWin.Play();
+        highlightText.SetActive(false);
+        chart.ExecuteBlock("OpenChest");
     }
 
     public void FinishInteraction()
     {
         OverworldManager.Ins.EnableControl();
+        SceneManager.LoadScene("MainMenuScene");
     }
 
     public void UnlockChest()

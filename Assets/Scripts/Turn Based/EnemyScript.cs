@@ -28,6 +28,10 @@ public class EnemyScript : CharacterScript
     [SerializeField] Canvas damageNumber;
 
     [SerializeField] TMP_Text damageText;
+
+    [SerializeField] AudioSource sfx;
+
+    [SerializeField] GameObject mouseHighlight;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     private void Awake()
@@ -70,16 +74,16 @@ public class EnemyScript : CharacterScript
         }
     }
 
-    public void AnimateAttack()
+    public bool AnimateAttack()
     {
-        anim.SetBool("isIdle", false);
         anim.Play("Mutant Swiping");
-        anim.SetBool("isIdle", true);
+        Debug.Log("Enemy Attacking: " + gameObject.name);
+        sfx.Play();
+        return true;
     }
 
     public void AnimateIdle()
     {
-        Debug.Log("Return/Start Idle");
         anim.SetBool("isIdle", true);
         anim.Play("Mutant Idle");
     }
@@ -87,6 +91,19 @@ public class EnemyScript : CharacterScript
     public override void GetHeal(float heal)
     {
         //throw new System.NotImplementedException();
+    }
+
+    private void OnMouseEnter()
+    {
+        if (CommandManager.Ins.Cmd == CommandManager.Command.attack && !isDead)
+        {
+            mouseHighlight.SetActive(true);
+        }
+    }
+
+    private void OnMouseExit()
+    {
+        mouseHighlight.SetActive(false);
     }
 
     void Update()

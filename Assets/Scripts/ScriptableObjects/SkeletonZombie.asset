@@ -16,6 +16,6 @@ MonoBehaviour:
   role: 1
   health: 60
   mana: 0
-  speed: 0
+  speed: 20
   damage: 20
   block: 0

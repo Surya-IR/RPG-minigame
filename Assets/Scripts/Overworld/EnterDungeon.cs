@@ -7,6 +7,8 @@ public class EnterDungeon : MonoBehaviour
     private bool isInteractable;
     private bool isQuestActive;
     [SerializeField] Flowchart Dialogue;
+
+    [SerializeField] GameObject highlightText;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,12 +19,14 @@ public class EnterDungeon : MonoBehaviour
     public void OnTriggerEnter(Collider other)
     {
         isInteractable = true;
+        highlightText.SetActive(true);
     }
 
     public void EnteringDungeon()
     {
         if (isInteractable && isQuestActive)
         {
+            highlightText.SetActive(false);
             SceneManager.LoadScene("DungeonScene");
         }
         else if(isInteractable)
@@ -34,6 +38,12 @@ public class EnterDungeon : MonoBehaviour
     private void OnTriggerStay(Collider other)
     {
         
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        isInteractable= false;
+        highlightText.SetActive(false);
     }
 
     public void ActivateQuest()

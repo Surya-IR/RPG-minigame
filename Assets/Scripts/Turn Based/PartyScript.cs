@@ -28,6 +28,10 @@ public class PartyScript : CharacterScript
     [SerializeField] float fadeSpeed;
 
     [SerializeField] Animator anim;
+
+    [SerializeField] AudioSource sfx;
+
+    [SerializeField] GameObject mouseHighlight;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     private void Awake()
@@ -51,8 +55,9 @@ public class PartyScript : CharacterScript
     {
         if (health <= 0)
         {
+            Debug.Log("Player is Dead");
             isDead = true;
-            anim.Play("NordstromDeath");
+            anim.Play("PlayerDeath");
         }
         else
         {
@@ -66,20 +71,34 @@ public class PartyScript : CharacterScript
         HealthData = health + heal;
         if (HealthData > MaxHealth)
         {
-            health= MaxHealth;
+            health = MaxHealth;
+        }
+        healthBar.SetHealth(HealthData);
+    }
+
+    private void OnMouseEnter()
+    {
+        if (CommandManager.Ins.Cmd == CommandManager.Command.item)
+        {
+            mouseHighlight.SetActive(true);
         }
     }
 
+    private void OnMouseExit()
+    {
+        mouseHighlight.SetActive(false);
+    }
     public void AnimateAttack()
     {
         anim.SetBool("isIdle", false);
-        anim.Play("StableSlash");
+        anim.Play("PlayerAttack");
+        sfx.Play();
     }
 
     public void AnimateIdle()
     {
-        anim.SetBool("isIdle", false);
-        anim.Play("TurnBasedIdle");
+        anim.SetBool("isIdle", true);
+      //  anim.Play("TurnBasedIdle");
     }
 
     public void AssignStats()
