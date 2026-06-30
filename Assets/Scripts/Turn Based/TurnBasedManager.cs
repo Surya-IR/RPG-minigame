@@ -50,8 +50,8 @@ public class TurnBasedManager : MonoBehaviour
     {
         playerParty.Add(party);
         playerParty.OrderBy(x=>x.speedData).ToList();
+        turnIndicator.text = playerParty[0].characterName + "'s Turn";
     }
-
 
     //Lump enemies, sort by speed
     public void indexEnemy(EnemyScript enemy)
@@ -73,8 +73,8 @@ public class TurnBasedManager : MonoBehaviour
     public void StartPlayerTurn()
     {
         currentTurn = new KeyValuePair<Turn, int>(Turn.player, 0);
-        turnIndicator.text = playerParty[currentTurn.Value].characterName + "'s Turn";
         StartCoroutine(CommandManager.Ins.CommandStartPlayerTurn());
+        turnIndicator.text = playerParty[currentTurn.Value].characterName + "'s Turn";
     }
 
     public void NextPlayerTurn()
