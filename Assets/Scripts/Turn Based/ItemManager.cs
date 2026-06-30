@@ -37,7 +37,7 @@ public class ItemManager : MonoBehaviour
     {
         LoadItemDetails();
         var inventoryName = "ActiveInventory.json";
-        var sr = new StreamReader(Application.dataPath + "/InventorySystems/ActiveInventory/" + inventoryName);
+        var sr = new StreamReader(Application.streamingAssetsPath + "/InventorySystems/ActiveInventory/" + inventoryName);
         var inventoryText = sr.ReadToEnd();
 
         var activeItemDict = JsonConvert.DeserializeObject<ActiveInventoryWrapper>(inventoryText);
@@ -63,7 +63,7 @@ public class ItemManager : MonoBehaviour
     private void LoadItemDetails()
     {
         var itemDetails = "ItemDetails.json";
-        var rd = new StreamReader(Application.dataPath + "/InventorySystems/" + itemDetails);
+        var rd = new StreamReader(Application.streamingAssetsPath + "/InventorySystems/" + itemDetails);
         var rdText = rd.ReadToEnd();
 
         ItemDetailsWrapper jsonHolder = JsonConvert.DeserializeObject<ItemDetailsWrapper>(rdText);
